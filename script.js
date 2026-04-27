@@ -16,6 +16,11 @@ const truthSection = document.getElementById('truth-section');
 const newsItems = document.querySelectorAll('.news-item');
 const readButtons = document.querySelectorAll('.read-button');
 
+const newsModal = document.getElementById('news-modal');
+const modalTitle = document.getElementById('modal-title');
+const modalBody = document.getElementById('modal-body');
+const modalClose = document.querySelector('.modal-close');
+
 const truthMessage = document.getElementById('truth-message');
 const videoContainer = document.getElementById('video-container');
 const truthVideo = document.getElementById('truth-video');
@@ -42,14 +47,33 @@ navButtons.forEach(button => {
 readButtons.forEach(button => {
     button.addEventListener('click', (e) => {
         const newsItem = e.target.closest('.news-item');
-        if (newsItem && newsItem.dataset.read === 'false') {
-            newsItem.dataset.read = 'true';
-            newsReadCount++;
-            button.textContent = 'Leído';
-            button.disabled = true;
-            button.style.background = '#27ae60';
+        if (newsItem) {
+            const title = newsItem.querySelector('h3').textContent;
+            const fullContent = newsItem.dataset.fullContent;
+            
+            modalTitle.textContent = title;
+            modalBody.innerHTML = fullContent.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+            newsModal.classList.remove('hidden');
+            
+            if (newsItem.dataset.read === 'false') {
+                newsItem.dataset.read = 'true';
+                newsReadCount++;
+                button.textContent = 'Leído';
+                button.disabled = true;
+                button.style.background = '#27ae60';
+            }
         }
     });
+});
+
+modalClose.addEventListener('click', () => {
+    newsModal.classList.add('hidden');
+});
+
+newsModal.addEventListener('click', (e) => {
+    if (e.target === newsModal) {
+        newsModal.classList.add('hidden');
+    }
 });
 
 truthVideo.addEventListener('ended', () => {
