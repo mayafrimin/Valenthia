@@ -5,7 +5,7 @@ Página estática para escape room que simula un blog privado de una influencer.
 ## Estructura del proyecto
 
 ```
-webeme_2/
+Valenthia/
 ├── index.html          # Página principal
 ├── styles.css          # Estilos
 ├── script.js           # Lógica de la aplicación
@@ -17,7 +17,7 @@ webeme_2/
 ## Funcionalidades
 
 - **Login**
-- **Noticias encubiertas**: 5 noticias sobre Valexidir
+- **Noticias encubiertas**: 5 noticias sobre Valenthia
 - **Desvelo la verdad**: Solo accesible después de leer al menos 1 noticia
 - **Elección final**: Dos opciones con consecuencias diferentes
 
