@@ -5,7 +5,7 @@ Página estática para escape room que simula un blog privado de una influencer.
 ## Estructura del proyecto
 
 ```
-webeme_2/
+Valenthia/
 ├── index.html          # Página principal
 ├── styles.css          # Estilos
 ├── script.js           # Lógica de la aplicación

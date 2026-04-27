@@ -184,7 +184,7 @@ function showConsequence(choice) {
         content = `
             <h2 class="consequence-title" style="color: #3498db;">Has contado la verdad</h2>
             <p class="consequence-text">
-                Al elegir contar la verdad, has revelado que Valexidil no es un medicamento milagroso, 
+                Al elegir contar la verdad, has revelado que Valenthia no es un medicamento milagroso, 
                 sino una herramienta de control mental diseñada para eliminar la capacidad crítica 
                 de las personas.
             </p>
