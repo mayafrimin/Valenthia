@@ -78,7 +78,6 @@ function attachReadButtonListeners() {
                     newsItem.dataset.read = 'true';
                     newsReadCount++;
                     button.textContent = 'Leído';
-                    button.disabled = true;
                     button.style.background = '#27ae60';
                 }
             }
