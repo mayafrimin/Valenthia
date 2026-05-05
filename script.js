@@ -1,6 +1,7 @@
 const CORRECT_PASSWORD = 'conciencia';
 let newsReadCount = 0;
 let newsData = [];
+let videoTimerId = null; // Variable para guardar el ID del timer
 
 const loginScreen = document.getElementById('login-screen');
 const blogScreen = document.getElementById('blog-screen');
@@ -109,9 +110,25 @@ newsModal.addEventListener('click', (e) => {
     }
 });
 
-truthVideo.addEventListener('ended', () => {
-    choiceButtons.classList.remove('hidden');
-});
+// Evento para cuando el video termina (funciona con <video> tags locales)
+// truthVideo.addEventListener('ended', () => {
+//     choiceButtons.classList.remove('hidden');
+// });
+
+// Solución alternativa para iframes de Google Drive: setTimeout
+// El video de Google Drive dura 38 segundos
+function startVideoTimer() {
+    console.log('Timer iniciado - Los botones aparecerán en 38 segundos');
+    // Cancelar timer anterior si existe
+    if (videoTimerId !== null) {
+        clearTimeout(videoTimerId);
+    }
+    videoTimerId = setTimeout(() => {
+        console.log('Timer completado - Mostrando botones');
+        console.log('choiceButtons element:', choiceButtons);
+        choiceButtons.classList.remove('hidden');
+    }, 38000); // 38 segundos en milisegundos
+}
 
 truthPill.addEventListener('click', () => showConsequence('truth'));
 medicinePill.addEventListener('click', () => showConsequence('medicine'));
@@ -122,6 +139,7 @@ function attemptLogin() {
     
     if (password === CORRECT_PASSWORD) {
         showScreen('blog');
+        switchSection('news'); // Resetear a la sección de noticias al hacer login
     } else {
         errorMessage.textContent = 'No eres suficiente milenial para saber la contraseña. ¡Dale una vuelta!';
         passwordInput.value = '';
@@ -148,6 +166,7 @@ function showScreen(screenName) {
 }
 
 function switchSection(section) {
+    console.log('Cambiando a sección:', section);
     navButtons.forEach(btn => btn.classList.remove('active'));
     
     if (section === 'news') {
@@ -165,11 +184,15 @@ function switchSection(section) {
             videoContainer.classList.add('hidden');
             choiceButtons.classList.add('hidden');
         } else {
+            console.log('Mostrando video e iniciando timer');
             truthMessage.style.display = 'none';
             videoContainer.classList.remove('hidden');
             choiceButtons.classList.add('hidden');
-            truthVideo.currentTime = 0;
-            truthVideo.play();
+            // No se puede resetear iframe de Google Drive
+            // truthVideo.currentTime = 0;
+            // truthVideo.play();
+            // Iniciar el timer para mostrar botones después de 38 segundos
+            startVideoTimer();
         }
     }
 }
@@ -222,13 +245,20 @@ function showConsequence(choice) {
 }
 
 function restartApp() {
+    // Cancelar el timer si está activo
+    if (videoTimerId !== null) {
+        clearTimeout(videoTimerId);
+        videoTimerId = null;
+    }
+    
     newsReadCount = 0;
     renderNews();
     
     passwordInput.value = '';
     errorMessage.textContent = '';
-    truthVideo.pause();
-    truthVideo.currentTime = 0;
+    // No se puede pausar/resetear iframe de Google Drive
+    // truthVideo.pause();
+    // truthVideo.currentTime = 0;
     
     showScreen('login');
 }
