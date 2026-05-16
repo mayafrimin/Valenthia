@@ -1,4 +1,4 @@
-const CORRECT_PASSWORD = 'conciencia';
+const PASSWORD_HASH = '03a98f74306972aaa78ab766d29f0a9ffa69c03a5d72b1ac67543efc9bfddaad';
 let newsReadCount = 0;
 let newsData = [];
 let videoTimerId = null; // Variable para guardar el ID del timer
@@ -134,10 +134,19 @@ truthPill.addEventListener('click', () => showConsequence('truth'));
 medicinePill.addEventListener('click', () => showConsequence('medicine'));
 restartButton.addEventListener('click', restartApp);
 
-function attemptLogin() {
+async function hashPassword(value) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(value);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function attemptLogin() {
     const password = passwordInput.value.trim();
+    const passwordHash = await hashPassword(password);
     
-    if (password === CORRECT_PASSWORD) {
+    if (passwordHash === PASSWORD_HASH) {
         showScreen('blog');
         switchSection('news'); // Resetear a la sección de noticias al hacer login
     } else {
@@ -204,7 +213,7 @@ function showConsequence(choice) {
     
     if (choice === 'truth') {
         content = `
-            <h2 class="consequence-title" style="color: #3498db;">Has contado la verdad</h2>
+            <h2 class="consequence-title" style="color: #e74c3c;">Has contado la verdad</h2>
             <p class="consequence-text">
                 Al elegir contar la verdad, has revelado que Valenthia no es un medicamento milagroso, 
                 sino una herramienta de control mental diseñada para eliminar la capacidad crítica 
@@ -222,7 +231,7 @@ function showConsequence(choice) {
         `;
     } else {
         content = `
-            <h2 class="consequence-title" style="color: #e74c3c;">Has publicitado la pastilla</h2>
+            <h2 class="consequence-title" style="color: #3498db;">Has publicitado la pastilla</h2>
             <p class="consequence-text">
                 Sientes una calma absoluta. Todas tus preocupaciones desaparecen. 
                 El mundo parece perfecto ahora.
