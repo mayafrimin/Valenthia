@@ -254,6 +254,9 @@ function showConsequence(choice) {
                 Has despertado. Ahora eres consciente de la manipulación.
                 Pero... ¿qué harás con esta información?
             </p>
+            <p class="consequence-text" style="color: #e74c3c; font-weight: bold;">
+                Fin del juego. Has elegido la verdad.
+            </p>
         `;
     } else {
         content = `
