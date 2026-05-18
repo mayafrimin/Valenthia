@@ -286,8 +286,8 @@ function switchSection(section) {
         newsSection.classList.add('hidden');
         truthSection.classList.remove('hidden');
 
-        if (newsReadCount === 0) {
-            truthMessage.textContent = 'Necesitas estar más informado para revelar la verdad. Lee más noticias antes de continuar.';
+        if (newsReadCount < newsData.length) {
+            truthMessage.textContent = `Necesitas estar más informado para revelar la verdad. Lee más noticias antes de continuar. Has leído ${newsReadCount} de ${newsData.length}.`;
             truthMessage.style.display = 'block';
             videoContainer.classList.add('hidden');
             choiceButtons.classList.add('hidden');
