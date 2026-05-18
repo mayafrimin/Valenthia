@@ -1,8 +1,17 @@
 ﻿const PASSWORD_HASH = '03a98f74306972aaa78ab766d29f0a9ffa69c03a5d72b1ac67543efc9bfddaad';
 const REQUIRED_EMOTIONS = ['alegria', 'tristeza', 'miedo', 'rabia', 'amor', 'sorpresa'];
 
+const SPECIAL_NEWS_ANSWER_HASHES = [
+    '6cdfefb9f3e96e75b8b0bb4f4efc6efdd20cf51666f716c9303e9170c250d1ef',
+    '4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a',
+    '404f6a57f5e183f7f27d3656405e1f35f029f4e4566130180b8af50b914ce046',
+    '313ce7d71787960e3bb5f8258c173ae466b4e08e1e7d24b9c7a5ba81c9a02d96',
+    '7902699be42c8a8e46fbbb4501726517e86b22c56a189f7625a6da49081b2451'
+];
+
 let newsReadCount = 0;
 let newsData = [];
+const specialNewsUnlocked = new Set();
 let videoTimerId = null; // Variable para guardar el ID del timer
 let truthChoicesUnlocked = false;
 const selectedEmotions = new Set();
@@ -53,16 +62,21 @@ async function loadNews() {
 
 function renderNews() {
     newsList.innerHTML = '';
-    newsData.forEach((news) => {
+    newsData.forEach((news, index) => {
+        const isSpecial = news.special === true;
+        const isLocked = isSpecial && !specialNewsUnlocked.has(index);
         const article = document.createElement('article');
-        article.className = 'news-item';
+        article.className = `news-item${isSpecial ? ' special-news' : ''}${isLocked ? ' locked-news' : ''}`;
+        article.dataset.index = index;
         article.dataset.read = 'false';
         article.dataset.fullContent = news.fullContent;
+        article.dataset.locked = String(isLocked);
         
         article.innerHTML = `
+            ${isSpecial ? '<span class="special-badge">Especial</span>' : ''}
             <h3>${news.title}</h3>
             <p>${news.summary}</p>
-            <button class="read-button">Leer más</button>
+            <button class="read-button">${isLocked ? 'Desbloquear' : 'Leer más'}</button>
         `;
         
         newsList.appendChild(article);
@@ -78,21 +92,93 @@ function attachReadButtonListeners() {
             const newsItem = e.target.closest('.news-item');
             if (!newsItem) return;
 
-            const title = newsItem.querySelector('h3').textContent;
-            const fullContent = newsItem.dataset.fullContent;
+            const newsIndex = Number(newsItem.dataset.index);
+            const news = newsData[newsIndex];
 
-            modalTitle.textContent = title;
-            modalBody.innerHTML = fullContent.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
-            newsModal.classList.remove('hidden');
-
-            if (newsItem.dataset.read === 'false') {
-                newsItem.dataset.read = 'true';
-                newsReadCount++;
-                button.textContent = 'Leído';
-                button.style.background = '#27ae60';
+            if (newsItem.dataset.locked === 'true') {
+                showUnlockChallenge(newsIndex);
+                return;
             }
+
+            openNews(newsItem);
         });
     });
+}
+
+function openNews(newsItem) {
+    const button = newsItem.querySelector('.read-button');
+    const title = newsItem.querySelector('h3').textContent;
+    const fullContent = newsItem.dataset.fullContent;
+
+    modalTitle.textContent = title;
+    modalBody.innerHTML = `<p>${fullContent.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
+    newsModal.classList.remove('hidden');
+
+    if (newsItem.dataset.read === 'false') {
+        newsItem.dataset.read = 'true';
+        newsReadCount++;
+        button.textContent = 'Leído';
+        button.style.background = '#27ae60';
+    }
+}
+
+function normalizeUnlockAnswer(value) {
+    return value
+        .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[\s-]/g, '')
+        .toLowerCase();
+}
+
+function unlockSpecialNews(newsIndex) {
+    specialNewsUnlocked.add(newsIndex);
+
+    const newsItem = document.querySelector(`.news-item[data-index="${newsIndex}"]`);
+    if (!newsItem) return;
+
+    newsItem.dataset.locked = 'false';
+    newsItem.classList.remove('locked-news');
+    newsItem.querySelector('.read-button').textContent = 'Leer más';
+    openNews(newsItem);
+}
+
+function showUnlockChallenge(newsIndex) {
+    const news = newsData[newsIndex];
+
+    modalTitle.textContent = `Desbloquear ${news.title}`;
+    modalBody.innerHTML = `
+        <div class="unlock-challenge">
+            <p>${news.unlock.question}</p>
+            <input type="text" id="unlock-answer" class="unlock-input" autocomplete="off" placeholder="Respuesta">
+            <button id="unlock-submit" class="unlock-button">Desbloquear</button>
+            <p id="unlock-error" class="unlock-error"></p>
+        </div>
+    `;
+    newsModal.classList.remove('hidden');
+
+    const unlockInput = document.getElementById('unlock-answer');
+    const unlockButton = document.getElementById('unlock-submit');
+    const unlockError = document.getElementById('unlock-error');
+    const expectedAnswerHash = SPECIAL_NEWS_ANSWER_HASHES[newsIndex];
+
+    async function verifyUnlockAnswer() {
+        const answerHash = await hashPassword(normalizeUnlockAnswer(unlockInput.value));
+        if (answerHash === expectedAnswerHash) {
+            unlockError.textContent = '';
+            unlockSpecialNews(newsIndex);
+            return;
+        }
+
+        unlockError.textContent = 'Esa clave no desbloquea esta noticia.';
+        unlockInput.focus();
+    }
+
+    unlockButton.addEventListener('click', verifyUnlockAnswer);
+    unlockInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') verifyUnlockAnswer();
+    });
+    unlockInput.focus();
 }
 
 // Solución alternativa para iframes de Google Drive: setTimeout
@@ -291,6 +377,7 @@ function restartApp() {
     truthChoicesUnlocked = false;
     
     newsReadCount = 0;
+    specialNewsUnlocked.clear();
     renderNews();
 
     selectedEmotions.clear();
